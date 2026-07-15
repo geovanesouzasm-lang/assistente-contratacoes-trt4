@@ -139,6 +139,23 @@ def responder(chat, mensagem_usuario: str) -> str:
     return resposta.text
 
 
+def responder_stream(chat, mensagem_usuario: str):
+    """
+    Versão em streaming: devolve um GERADOR de pedaços de texto, para efeito de "digitando".
+
+    Observação sobre function calling: com enable_automatic_function_calling=True, o SDK resolve as
+    chamadas de ferramenta (acervo/web) internamente antes de emitir o texto final. Ao iterar com
+    stream=True, os pedaços que chegam já são do texto da resposta — as etapas de ferramenta são
+    tratadas pelo SDK e não aparecem como "ruído". Se, em algum caso, um pedaço não tiver texto,
+    ele é simplesmente ignorado.
+    """
+    resposta = chat.send_message(mensagem_usuario, stream=True)
+    for parte in resposta:
+        texto = getattr(parte, "text", None)
+        if texto:
+            yield texto
+
+
 # ---- Teste rápido de linha de comando ----------------------------------------------
 
 if __name__ == "__main__":
