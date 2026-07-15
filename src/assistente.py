@@ -60,28 +60,42 @@ def buscar_na_web(consulta: str) -> str:
     recentes. Retorna um resumo ancorado em fontes reais. Use com parcimônia, só quando o dado
     depende de atualização externa. Sempre trate o resultado como "externo, a conferir".
     """
+    # IMPORTANTE: o grounding (Google Search) só funciona com a biblioteca NOVA `google-genai`
+    # (google.genai). A biblioteca antiga `google.generativeai` NÃO suporta grounding — dá o erro
+    # "Unknown field for FunctionDeclaration: google_search". Por isso a busca web usa a lib nova,
+    # isoladamente, apenas aqui.
     try:
-        _configurar()
-        prompt = (
-            "Busque na web e responda de forma objetiva, citando as fontes (com URL quando "
-            f"possível), à seguinte questão: {consulta}\n"
-            "Se for um valor legal/normativo que muda por ano, deixe claro o ano de referência."
+        from google import genai as genai_novo
+        from google.genai import types as genai_types
+    except Exception as e:
+        return (f"Não consegui carregar a biblioteca de busca web ({e}). "
+                "Informe ao usuário que não foi possível obter o dado externo agora.")
+
+    api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return ("Não há chave de API configurada para a busca web. "
+                "Informe ao usuário que não foi possível obter o dado externo agora.")
+
+    prompt = (
+        "Busque na web e responda de forma objetiva, citando as fontes (com URL quando "
+        f"possível), à seguinte questão: {consulta}\n"
+        "Se for um valor legal/normativo que muda por ano, deixe claro o ano de referência."
+    )
+
+    # Nome do modelo sem o prefixo "models/" (a lib nova aceita o id direto).
+    modelo_web = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash").replace("models/", "")
+
+    try:
+        client = genai_novo.Client(api_key=api_key)
+        ferramenta_busca = genai_types.Tool(google_search=genai_types.GoogleSearch())
+        resp = client.models.generate_content(
+            model=modelo_web,
+            contents=prompt,
+            config=genai_types.GenerateContentConfig(tools=[ferramenta_busca]),
         )
-        # O nome da ferramenta de grounding variou entre versões da API. Tentamos as formas
-        # conhecidas, da mais nova para a mais antiga, até uma funcionar.
-        ultimo_erro = None
-        for tool_spec in ("google_search", "google_search_retrieval",
-                          [{"google_search": {}}], [{"google_search_retrieval": {}}]):
-            try:
-                modelo_busca = genai.GenerativeModel(model_name=MODELO, tools=tool_spec)
-                resp = modelo_busca.generate_content(prompt)
-                if resp and getattr(resp, "text", None):
-                    return resp.text
-            except Exception as e:
-                ultimo_erro = e
-                continue
-        return ("Não consegui concluir a busca web no momento "
-                f"({ultimo_erro}). Sugira ao usuário conferir a fonte oficial.")
+        if resp and getattr(resp, "text", None):
+            return resp.text
+        return ("A busca web não retornou texto. Sugira ao usuário conferir a fonte oficial.")
     except Exception as e:
         return (f"Não consegui concluir a busca web ({e}). "
                 "Informe ao usuário que não foi possível obter o dado externo agora e sugira "
