@@ -1,4 +1,5 @@
 streamlit>=1.30
 google-generativeai>=0.7
+google-genai>=0.3
 numpy>=1.24
 pypdf>=4.0
