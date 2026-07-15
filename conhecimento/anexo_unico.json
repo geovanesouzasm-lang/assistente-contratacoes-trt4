@@ -1,0 +1,858 @@
+{
+  "meta": {
+    "fonte": "Anexo Único da Portaria GP.TRT4 nº 1.737/2023, alterado pela Portaria GP.TRT4 nº 2.639/2025",
+    "titulo": "Documentos obrigatórios e facultativos na fase de planejamento da contratação",
+    "papel": "Núcleo prático do assistente de contratações. Dado o tipo de contratação (e, quando aplicável, a faixa de valor), retorna a lista de documentos obrigatórios e facultativos com seus formulários.",
+    "convencoes": {
+      "condicao": "Restringe quando o documento se aplica. Se presente, o assistente deve confirmar a condição com o usuário antes de exigir/dispensar o documento.",
+      "alternativa_de": "O formulário é uma das opções de uma escolha 'um OU outro'. Formulários com o mesmo 'grupo_alternativa' são mutuamente substituíveis.",
+      "grupo_alternativa": "Rótulo que agrupa formulários intercambiáveis dentro de um mesmo caso.",
+      "valor_referencia": "Quando um caso depende de faixa de valor, este campo indica qual limite do art. 75 da Lei 14.133/2021 serve de divisor. O valor numérico NÃO é fixo aqui — deve ser resolvido em tempo de execução (ver bloco 'resolucao_de_valor')."
+    },
+    "resolucao_de_valor": {
+      "regra": "Os limites dos incisos I e II do art. 75 da Lei nº 14.133/2021 são atualizados anualmente (1º de janeiro), por decreto, na forma do art. 182 da mesma Lei.",
+      "instrucao_ao_assistente": "Quando um caso tiver 'valor_referencia', o assistente NÃO deve assumir um valor de memória. Deve buscar por web search o limite vigente para o ano corrente (fontes preferenciais: PNCP, Portal de Governança de Contratações do TRT4, decreto de atualização do art. 75). Só então comparar com o valor estimado da contratação informado pelo usuário.",
+      "limites": {
+        "art_75_I": "Obras e serviços de engenharia / serviços de manutenção de veículos automotores — limite do inciso I (valor a resolver por web search)",
+        "art_75_II": "Bens e serviços em geral — limite do inciso II (valor a resolver por web search)"
+      }
+    }
+  },
+  "formularios": {
+    "CLC-1A": {
+      "nome": "Documento de Formalização da Demanda (DFD)",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/11cGR_EAZNP7uwzUZ8dDqRMXr5I1QxTvjy88kCISPkac/copy"
+    },
+    "CLC-1B": {
+      "nome": "Documento de Formalização da Demanda - Calamidade Pública",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1XWHjq4gACnQftI5FYd0EngRqGxA0XAUisRxWiCw2BaI/copy"
+    },
+    "CLC-1C": {
+      "nome": "Documento de Formalização da Demanda - Casos de Emergência",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1S8WyQTSyofjwRioLcjkIMYLIvinqcSdo7jrNJWerhD8/copy"
+    },
+    "CLC-2": {
+      "nome": "Formulário de Instituição da Equipe de Planejamento da Contratação",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1srbbmhKEG3UyP_Ff0xsxu-NzXT9qV_dChHHOx936N-U/copy"
+    },
+    "CLC-3": {
+      "nome": "Estudo Técnico Preliminar (ETP)",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1g2vbnE7FOLxI6xMo1Az0vv4gx1n2T8sC-uI7qtETzlk/copy"
+    },
+    "CLC-4": {
+      "nome": "Mapa de Riscos",
+      "tipo_arquivo": "gsheet",
+      "url": "https://docs.google.com/spreadsheets/u/1/d/1khTk6wO43iI0Yi5AaQniCrrDy26yp2NgFvDSiCA6yxQ/copy"
+    },
+    "CLC-5A": {
+      "nome": "Termo de Referência - Modelo Completo",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1I52GLi9yFA-gEZm8xkht58uBNJRWWYdndnXIg4nXjDw/copy"
+    },
+    "CLC-5B": {
+      "nome": "Termo de Referência - Modelo Simplificado",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1psqXedKs3vniIQpq2Cdn0SieKAFMi4MKT_IfsNcCfQE/copy"
+    },
+    "CLC-5C": {
+      "nome": "Termo de Referência - Inexigibilidade - Evento Externo de Capacitação",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1vJtBLKwAvXUWjsYMgFt8pssNp4BaHFpLMD6WJO17T20/copy"
+    },
+    "CLC-5D": {
+      "nome": "Termo de Referência - Inexigibilidade - Evento Interno de Capacitação",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1Bubb6lT3XMA4Co5Wd9QDT1-jExK6y461suUk2npOUI8/copy"
+    },
+    "CLC-5E": {
+      "nome": "Termo de Referência - Convênios, Acordos e Termos de Cooperação Não Onerosos",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/18rcYjJktiIlTl6XzG8dNd9II7AeyCtZXjnBJ716bkTk/copy"
+    },
+    "CLC-5F": {
+      "nome": "Termo de Referência - Inexigibilidade de Licitação",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1h7D3QzLEI89CGKuOE9PFxFbJZ9VRmbUK1dX-egcjJTE/copy"
+    },
+    "CLC-5G": {
+      "nome": "Termo de Referência - Calamidade Pública",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1eTGFCZlkU2_2ZjO7c_d9F7XPLVAOD1Rw9HAfeyvZy5s/copy"
+    },
+    "CLC-5H": {
+      "nome": "Termo de Referência - Casos de Emergência",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1Belzk9XNj6K8b87PMgz6CM-DleDWVtdzi2P2VNLF8fQ/copy"
+    },
+    "CLC-5I": {
+      "nome": "Termo de Referência - Convênios, Acordos e Termos de Cooperação Onerosos",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/16r7aqB-bd5hWd5lCWDKbAB-tlpm9SSUQd-4HSMmJP0k/copy"
+    },
+    "CLC-6": {
+      "nome": "Projeto Básico",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1J7UK8eTc53WgUYtTxDB1qR9nynBbO5k3XgD_v_RxOqI/copy",
+      "sem_template": true,
+      "observacao": "Intencionalmente sem formulário-modelo: pela complexidade e variação técnica dos documentos de engenharia, o Projeto Básico é elaborado caso a caso (art. 6º, XXV, Lei 14.133/2021)."
+    },
+    "CLC-7": {
+      "nome": "Indicação e Ciência de Equipe de Gestão e Fiscalização de Contrato",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1EzukwCp4_cSC4Pu147K4u-uJUJJ_6UQikD4rMQvXz9Q/copy"
+    },
+    "CLC-8": {
+      "nome": "Formulário de Adesão à Ata de Registro de Preços",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1MMHjonoaPK8mjyM3o-xT1fHSMvjE3nbtQPPVWiwJ0Y8/copy"
+    },
+    "CLC-9": {
+      "nome": "Formulário de Participação em ARP e Estudo Técnico Preliminar Simplificado",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/16jJ06P4JT8inY3Oyr6phs8iu7akCa9NDd5xWB5jGyI8/copy"
+    },
+    "CLC-10": {
+      "nome": "Formulário de Contratação por Ata de Registro de Preços",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1IRbqSvMCRgsTHSWBIuQoOTUylDcT9ObEWVQRm-VfZ80/copy"
+    },
+    "CLC-11": {
+      "nome": "Formulário de Prorrogação de Contrato Contínuo",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1uEpHDYQDccCIf5EqScYwHgeCucQwWl77k3IYF64is9Y/copy"
+    },
+    "CLC-12": {
+      "nome": "Formulário de Ateste de Vantajosidade na Manutenção de Contrato Plurianual",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1B2Vz5XGVZbyH1MSz0cVeWyegvojvwKg7-Vg1DyieVfA/copy"
+    },
+    "CLC-13": {
+      "nome": "Formulário de Prorrogação de Ata de Registro de Preços",
+      "tipo_arquivo": "gdoc",
+      "url": "https://docs.google.com/document/d/1u2yL3jcS70s7Pafoc8vVJ2e-FgAwAdTH_bKXkurgSgk/copy"
+    }
+  },
+  "casos": [
+    {
+      "id": "disp-baixo-valor",
+      "grupo": "Dispensa de Licitação (Art. 75)",
+      "tipo": "Dispensa de Licitação em razão do baixo valor",
+      "fundamento": "Art. 75, incisos I e II, da Lei nº 14.133/2021",
+      "depende_de_valor": true,
+      "valor_estimado": "inferior aos limites dos incisos I e II do art. 75",
+      "valor_referencia": [
+        "art_75_I",
+        "art_75_II"
+      ],
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1A"
+        },
+        {
+          "formulario": "CLC-4",
+          "condicao": "apenas quando se tratar de contrato de serviço ou de fornecimento contínuo"
+        },
+        {
+          "formulario": "CLC-5B",
+          "alternativa_de": true,
+          "grupo_alternativa": "TR_ou_PB"
+        },
+        {
+          "formulario": "CLC-6",
+          "alternativa_de": true,
+          "grupo_alternativa": "TR_ou_PB"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver equipe de gestão e fiscalização"
+        }
+      ],
+      "facultativos": [
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4",
+          "condicao": "quando NÃO se tratar de contrato de serviço ou de fornecimento contínuo"
+        },
+        {
+          "formulario": "CLC-5A"
+        }
+      ]
+    },
+    {
+      "id": "disp-deserta-fracassada",
+      "grupo": "Dispensa de Licitação (Art. 75)",
+      "tipo": "Dispensa de Licitação em razão de licitação deserta ou fracassada realizada há menos de 1 ano",
+      "fundamento": "Art. 75, inciso III, da Lei nº 14.133/2021",
+      "depende_de_valor": false,
+      "valor_estimado": "independentemente do valor",
+      "obrigatorios": [
+        {
+          "formulario": "CLC-5A",
+          "alternativa_de": true,
+          "grupo_alternativa": "TR_ou_PB"
+        },
+        {
+          "formulario": "CLC-6",
+          "alternativa_de": true,
+          "grupo_alternativa": "TR_ou_PB"
+        },
+        {
+          "formulario": "CLC-4"
+        }
+      ],
+      "facultativos": []
+    },
+    {
+      "id": "disp-especificas",
+      "grupo": "Dispensa de Licitação (Art. 75)",
+      "tipo": "Dispensas de Licitação previstas no art. 75, incisos IV (alíneas 'a' e 'j'), IX, XIV e XV",
+      "fundamento": "Art. 75, incisos IV ('a' e 'j'), IX, XIV e XV, da Lei nº 14.133/2021",
+      "depende_de_valor": false,
+      "valor_estimado": "independentemente do valor",
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1A"
+        },
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4"
+        },
+        {
+          "formulario": "CLC-5A",
+          "alternativa_de": true,
+          "grupo_alternativa": "TR_ou_PB"
+        },
+        {
+          "formulario": "CLC-6",
+          "alternativa_de": true,
+          "grupo_alternativa": "TR_ou_PB"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": []
+    },
+    {
+      "id": "disp-calamidade",
+      "grupo": "Dispensa de Licitação (Art. 75)",
+      "tipo": "Dispensa de Licitação em casos de calamidade pública",
+      "fundamento": "Art. 75, inciso VIII, da Lei nº 14.133/2021 e Lei nº 14.981/2024",
+      "depende_de_valor": false,
+      "valor_estimado": "independentemente do valor",
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1B"
+        },
+        {
+          "formulario": "CLC-4",
+          "condicao": "para a fase de gestão contratual"
+        },
+        {
+          "formulario": "CLC-5G"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": [
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4",
+          "condicao": "para as fases de planejamento da contratação e seleção do fornecedor"
+        }
+      ]
+    },
+    {
+      "id": "disp-emergencia",
+      "grupo": "Dispensa de Licitação (Art. 75)",
+      "tipo": "Dispensa de Licitação em casos de emergência",
+      "fundamento": "Art. 75, inciso VIII, da Lei nº 14.133/2021",
+      "depende_de_valor": false,
+      "valor_estimado": "independentemente do valor",
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1C"
+        },
+        {
+          "formulario": "CLC-4",
+          "condicao": "para a fase de gestão contratual"
+        },
+        {
+          "formulario": "CLC-5H"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": [
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4",
+          "condicao": "para as fases de planejamento da contratação e seleção do fornecedor"
+        }
+      ]
+    },
+    {
+      "id": "inex-convenio-nao-oneroso",
+      "grupo": "Inexigibilidade de Licitação (Art. 74)",
+      "tipo": "Inexigibilidade - Convênios, Acordos, Termos de Cooperação e instrumentos congêneres (Não Oneroso)",
+      "fundamento": "Art. 74, caput, da Lei nº 14.133/2021",
+      "depende_de_valor": false,
+      "valor_estimado": "não oneroso",
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1A"
+        },
+        {
+          "formulario": "CLC-5E"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": [
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4"
+        }
+      ]
+    },
+    {
+      "id": "inex-convenio-oneroso",
+      "grupo": "Inexigibilidade de Licitação (Art. 74)",
+      "tipo": "Inexigibilidade - Convênios, Acordos, Termos de Cooperação e instrumentos congêneres (Oneroso)",
+      "fundamento": "Art. 74, caput, da Lei nº 14.133/2021",
+      "depende_de_valor": false,
+      "valor_estimado": "oneroso",
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1A"
+        },
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4"
+        },
+        {
+          "formulario": "CLC-5I"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": []
+    },
+    {
+      "id": "inex-geral-inferior",
+      "grupo": "Inexigibilidade de Licitação (Art. 74)",
+      "tipo": "Inexigibilidade de Licitação (geral) - valor inferior ao limite",
+      "fundamento": "Art. 74, incisos I, II, III, IV e V, da Lei nº 14.133/2021",
+      "depende_de_valor": true,
+      "valor_estimado": "inferior aos limites dos incisos I e II do art. 75",
+      "valor_referencia": [
+        "art_75_I",
+        "art_75_II"
+      ],
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1A"
+        },
+        {
+          "formulario": "CLC-4",
+          "condicao": "apenas quando se tratar de contrato de serviço ou de fornecimento contínuo"
+        },
+        {
+          "formulario": "CLC-5F"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": [
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4",
+          "condicao": "quando NÃO se tratar de contrato de serviço ou de fornecimento contínuo"
+        }
+      ]
+    },
+    {
+      "id": "inex-geral-superior",
+      "grupo": "Inexigibilidade de Licitação (Art. 74)",
+      "tipo": "Inexigibilidade de Licitação (geral) - valor superior ao limite",
+      "fundamento": "Art. 74, incisos I, II, III, IV e V, da Lei nº 14.133/2021",
+      "depende_de_valor": true,
+      "valor_estimado": "superior aos limites dos incisos I e II do art. 75",
+      "valor_referencia": [
+        "art_75_I",
+        "art_75_II"
+      ],
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1A"
+        },
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4"
+        },
+        {
+          "formulario": "CLC-5F"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": []
+    },
+    {
+      "id": "inex-monopolio",
+      "grupo": "Inexigibilidade de Licitação (Art. 74)",
+      "tipo": "Inexigibilidade de Licitação para contratação de serviço público oferecido em regime de monopólio",
+      "fundamento": "Art. 74, caput, da Lei nº 14.133/2021",
+      "depende_de_valor": false,
+      "valor_estimado": "independentemente do valor",
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1A"
+        },
+        {
+          "formulario": "CLC-4",
+          "condicao": "apenas quando se tratar de contrato de serviço ou de fornecimento contínuo"
+        },
+        {
+          "formulario": "CLC-5F"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": [
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4",
+          "condicao": "quando NÃO se tratar de contrato de serviço ou de fornecimento contínuo"
+        }
+      ]
+    },
+    {
+      "id": "inex-evento-externo-inferior",
+      "grupo": "Inexigibilidade de Licitação (Art. 74)",
+      "tipo": "Inexigibilidade - Evento Externo de Capacitação - valor inferior ao limite",
+      "fundamento": "Art. 74, inciso III, alínea 'f', da Lei nº 14.133/2021",
+      "depende_de_valor": true,
+      "valor_estimado": "inferior ao limite do inciso II do art. 75",
+      "valor_referencia": [
+        "art_75_II"
+      ],
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1A"
+        },
+        {
+          "formulario": "CLC-5C"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": [
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4"
+        }
+      ]
+    },
+    {
+      "id": "inex-evento-externo-superior",
+      "grupo": "Inexigibilidade de Licitação (Art. 74)",
+      "tipo": "Inexigibilidade - Evento Externo de Capacitação - valor superior ao limite",
+      "fundamento": "Art. 74, inciso III, alínea 'f', da Lei nº 14.133/2021",
+      "depende_de_valor": true,
+      "valor_estimado": "superior ao limite do inciso II do art. 75",
+      "valor_referencia": [
+        "art_75_II"
+      ],
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1A"
+        },
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4"
+        },
+        {
+          "formulario": "CLC-5C"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": []
+    },
+    {
+      "id": "inex-evento-interno-inferior",
+      "grupo": "Inexigibilidade de Licitação (Art. 74)",
+      "tipo": "Inexigibilidade - Evento Interno de Capacitação - valor inferior ao limite",
+      "fundamento": "Art. 74, inciso III, alínea 'f', da Lei nº 14.133/2021",
+      "depende_de_valor": true,
+      "valor_estimado": "inferior ao limite do inciso II do art. 75",
+      "valor_referencia": [
+        "art_75_II"
+      ],
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1A"
+        },
+        {
+          "formulario": "CLC-5D"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": [
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4"
+        }
+      ]
+    },
+    {
+      "id": "inex-evento-interno-superior",
+      "grupo": "Inexigibilidade de Licitação (Art. 74)",
+      "tipo": "Inexigibilidade - Evento Interno de Capacitação - valor superior ao limite",
+      "fundamento": "Art. 74, inciso III, alínea 'f', da Lei nº 14.133/2021",
+      "depende_de_valor": true,
+      "valor_estimado": "superior ao limite do inciso II do art. 75",
+      "valor_referencia": [
+        "art_75_II"
+      ],
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1A"
+        },
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4"
+        },
+        {
+          "formulario": "CLC-5D"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": []
+    },
+    {
+      "id": "licitacao",
+      "grupo": "Licitação (Art. 28)",
+      "tipo": "Licitação (procedimento licitatório regular)",
+      "fundamento": "Art. 28 da Lei nº 14.133/2021",
+      "depende_de_valor": false,
+      "valor_estimado": "independentemente do valor",
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1A"
+        },
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4"
+        },
+        {
+          "formulario": "CLC-5A",
+          "alternativa_de": true,
+          "grupo_alternativa": "TR_ou_PB"
+        },
+        {
+          "formulario": "CLC-6",
+          "alternativa_de": true,
+          "grupo_alternativa": "TR_ou_PB"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": []
+    },
+    {
+      "id": "arp-participacao",
+      "grupo": "Sistema de Registro de Preços (Art. 86)",
+      "tipo": "Participação em Ata de Registro de Preços de outros órgãos ou entidades públicas",
+      "fundamento": "Art. 86 da Lei nº 14.133/2021",
+      "depende_de_valor": false,
+      "valor_estimado": "independentemente do valor",
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1A"
+        },
+        {
+          "formulario": "CLC-9"
+        },
+        {
+          "formulario": "CLC-4",
+          "condicao": "apenas quando se tratar de contrato de serviço ou de fornecimento contínuo"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": [
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4",
+          "condicao": "quando NÃO se tratar de contrato de serviço ou de fornecimento contínuo"
+        }
+      ]
+    },
+    {
+      "id": "arp-contratacao-propria",
+      "grupo": "Sistema de Registro de Preços (Art. 86)",
+      "tipo": "Contratação por Ata de Registro de Preços própria ou da qual o TRT4 figure como partícipe",
+      "fundamento": "Art. 86 da Lei nº 14.133/2021",
+      "depende_de_valor": false,
+      "valor_estimado": "independentemente do valor",
+      "obrigatorios": [
+        {
+          "formulario": "CLC-10"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": []
+    },
+    {
+      "id": "arp-adesao-inferior",
+      "grupo": "Sistema de Registro de Preços (Art. 86)",
+      "tipo": "Adesão à Ata de Registro de Preços de órgão/entidade gerenciadora federal, estadual ou distrital (carona) - valor inferior ao limite",
+      "fundamento": "Art. 86, §§ 2º e 3º, da Lei nº 14.133/2021",
+      "depende_de_valor": true,
+      "valor_estimado": "inferior aos limites dos incisos I e II do art. 75",
+      "valor_referencia": [
+        "art_75_I",
+        "art_75_II"
+      ],
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1A"
+        },
+        {
+          "formulario": "CLC-8"
+        },
+        {
+          "formulario": "CLC-4",
+          "condicao": "apenas quando se tratar de contrato de serviço ou de fornecimento contínuo"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": [
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4",
+          "condicao": "quando NÃO se tratar de contrato de serviço ou de fornecimento contínuo"
+        },
+        {
+          "formulario": "CLC-5A",
+          "alternativa_de": true,
+          "grupo_alternativa": "TR_ou_PB"
+        },
+        {
+          "formulario": "CLC-6",
+          "alternativa_de": true,
+          "grupo_alternativa": "TR_ou_PB"
+        }
+      ]
+    },
+    {
+      "id": "arp-adesao-superior",
+      "grupo": "Sistema de Registro de Preços (Art. 86)",
+      "tipo": "Adesão à Ata de Registro de Preços de órgão/entidade gerenciadora federal, estadual ou distrital (carona) - valor superior ao limite",
+      "fundamento": "Art. 86, §§ 2º e 3º, da Lei nº 14.133/2021",
+      "depende_de_valor": true,
+      "valor_estimado": "superior aos limites dos incisos I e II do art. 75",
+      "valor_referencia": [
+        "art_75_I",
+        "art_75_II"
+      ],
+      "obrigatorios": [
+        {
+          "formulario": "CLC-1A"
+        },
+        {
+          "formulario": "CLC-2"
+        },
+        {
+          "formulario": "CLC-3"
+        },
+        {
+          "formulario": "CLC-4"
+        },
+        {
+          "formulario": "CLC-8"
+        },
+        {
+          "formulario": "CLC-7",
+          "condicao": "quando houver"
+        }
+      ],
+      "facultativos": [
+        {
+          "formulario": "CLC-5A",
+          "alternativa_de": true,
+          "grupo_alternativa": "TR_ou_PB"
+        },
+        {
+          "formulario": "CLC-6",
+          "alternativa_de": true,
+          "grupo_alternativa": "TR_ou_PB"
+        }
+      ]
+    },
+    {
+      "id": "prorrogacao-contrato-continuo",
+      "grupo": "Prorrogações e Manutenções Contratuais",
+      "tipo": "Prorrogação de contrato contínuo",
+      "fundamento": "Lei nº 14.133/2021 (fundamento legal aplicável à espécie; o Anexo Único não especifica dispositivo)",
+      "depende_de_valor": false,
+      "valor_estimado": "independentemente do valor",
+      "obrigatorios": [
+        {
+          "formulario": "CLC-11"
+        }
+      ],
+      "facultativos": []
+    },
+    {
+      "id": "prorrogacao-arp",
+      "grupo": "Prorrogações e Manutenções Contratuais",
+      "tipo": "Prorrogação de Ata de Registro de Preços",
+      "fundamento": "Lei nº 14.133/2021 (fundamento legal aplicável à espécie; o Anexo Único não especifica dispositivo)",
+      "depende_de_valor": false,
+      "valor_estimado": "independentemente do valor",
+      "obrigatorios": [
+        {
+          "formulario": "CLC-13"
+        }
+      ],
+      "facultativos": []
+    },
+    {
+      "id": "manutencao-contrato-plurianual",
+      "grupo": "Prorrogações e Manutenções Contratuais",
+      "tipo": "Manutenção de Contrato Plurianual",
+      "fundamento": "Lei nº 14.133/2021 (fundamento legal aplicável à espécie; o Anexo Único não especifica dispositivo)",
+      "depende_de_valor": false,
+      "valor_estimado": "independentemente do valor",
+      "obrigatorios": [
+        {
+          "formulario": "CLC-12"
+        }
+      ],
+      "facultativos": []
+    }
+  ]
+}
