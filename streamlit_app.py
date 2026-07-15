@@ -26,7 +26,7 @@ os.environ.setdefault("ASSISTENTE_BASE", str(BASE))
 if "GOOGLE_API_KEY" in st.secrets and not os.environ.get("GOOGLE_API_KEY"):
     os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
 
-from assistente import novo_chat, responder, responder_stream          # noqa: E402
+from assistente import novo_chat, responder          # noqa: E402
 
 st.set_page_config(page_title="Assistente de Contratações TRT4", page_icon="📋", layout="centered")
 
@@ -121,15 +121,10 @@ if prompt := st.chat_input("Escreva sua mensagem..."):
     with st.chat_message("user"):
         st.markdown(prompt)
     with st.chat_message("assistant"):
-        try:
-            # Streaming: o texto aparece gradualmente (efeito "digitando").
-            resposta = st.write_stream(responder_stream(st.session_state.chat, prompt))
-        except Exception as e:
-            # Fallback: se o streaming falhar, tenta a resposta de uma vez.
+        with st.spinner("Pensando..."):
             try:
                 resposta = responder(st.session_state.chat, prompt)
-                st.markdown(resposta)
-            except Exception as e2:
-                resposta = f"Ocorreu um erro ao consultar o modelo: {e2}"
-                st.markdown(resposta)
+            except Exception as e:
+                resposta = f"Ocorreu um erro ao consultar o modelo: {e}"
+        st.markdown(resposta)
     st.session_state.historico.append(("assistant", resposta))
