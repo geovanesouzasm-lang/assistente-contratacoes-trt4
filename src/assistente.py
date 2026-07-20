@@ -39,8 +39,17 @@ def _api_key() -> str:
     return api_key
 
 
+# Client ÚNICO do módulo — precisa continuar vivo enquanto o chat existir.
+# Se o client for criado dentro de uma função e sair de escopo, o objeto `chat` guardado no
+# session_state do Streamlit falha com "Cannot send a request, as the client has been closed".
+_CLIENT = None
+
+
 def _client() -> genai.Client:
-    return genai.Client(api_key=_api_key())
+    global _CLIENT
+    if _CLIENT is None:
+        _CLIENT = genai.Client(api_key=_api_key())
+    return _CLIENT
 
 
 # ---- Ferramentas expostas ao modelo -------------------------------------------------
