@@ -17,8 +17,9 @@ Como funciona:
 
 Requer GOOGLE_API_KEY (mesma chave do Gemini) para gerar embeddings.
 
-ATENÇÃO: o índice é gerado com um modelo de embedding específico. Se o modelo mudar, o índice
-precisa ser REGERADO (os vetores antigos não conversam com os novos).
+ATENÇÃO: o índice é gerado com um modelo e uma DIMENSÃO específicos (EMBED_MODELO +
+EMBED_DIM). Se qualquer um mudar, o índice precisa ser REGERADO — vetores de dimensões
+diferentes não se comparam, e a busca quebra.
 """
 
 from __future__ import annotations
@@ -42,8 +43,9 @@ SIG_FILE = INDEX_DIR / "acervo_sig.json"
 CHUNK_SIZE = 1500
 CHUNK_OVERLAP = 200
 
-# Modelo de embedding. No SDK novo o id vai sem o prefixo "models/".
+# Modelo de embedding e DIMENSÃO fixa. A dimensão precisa ser a MESMA na indexação e na consulta.
 EMBED_MODELO = os.environ.get("GEMINI_EMBED_MODEL", "gemini-embedding-001")
+EMBED_DIM = int(os.environ.get("GEMINI_EMBED_DIM", "768"))
 
 
 def _client() -> genai.Client:
@@ -85,7 +87,7 @@ def _chunk(texto: str) -> list[str]:
 def _embed(client: genai.Client, textos: list[str], task_type: str) -> np.ndarray:
     """
     Gera embeddings com o SDK novo. task_type: "RETRIEVAL_DOCUMENT" (indexação) ou
-    "RETRIEVAL_QUERY" (consulta).
+    "RETRIEVAL_QUERY" (consulta). Dimensão fixada em EMBED_DIM.
     """
     vetores = []
     LOTE = 100
@@ -94,7 +96,10 @@ def _embed(client: genai.Client, textos: list[str], task_type: str) -> np.ndarra
         res = client.models.embed_content(
             model=EMBED_MODELO,
             contents=lote,
-            config=types.EmbedContentConfig(task_type=task_type),
+            config=types.EmbedContentConfig(
+                task_type=task_type,
+                output_dimensionality=EMBED_DIM,
+            ),
         )
         for e in res.embeddings:
             vetores.append(e.values)
@@ -129,20 +134,25 @@ def _carregar_indice() -> tuple | None:
 def indexar(reindexar: bool = False) -> int:
     """
     Indexa o acervo de forma PERSISTENTE e INCREMENTAL.
-    - Se o índice salvo estiver atualizado (mesma assinatura do acervo), apenas o carrega: rápido,
-      sem custo de embeddings. É o caso normal do boot.
+    - Se o índice salvo estiver atualizado (mesma assinatura do acervo) E com a dimensão correta,
+      apenas o carrega: rápido, sem custo de embeddings. É o caso normal do boot.
     - Se documentos foram adicionados/removidos/alterados, reaproveita os embeddings dos que não
       mudaram e calcula SÓ os novos.
+    - Se a dimensão do índice salvo não bate com EMBED_DIM, força reindexação total.
     - reindexar=True força recálculo de tudo.
     """
     sig_atual = _assinatura_acervo()
     salvo = None if reindexar else _carregar_indice()
 
-    # Caso 1: índice existe e está atualizado → só carrega.
+    # Caso 1: índice existe, está atualizado e tem a dimensão certa → só carrega.
     if salvo is not None:
         vetores_old, metas_old, sig_old = salvo
-        if sig_old == sig_atual and len(metas_old) == len(vetores_old):
+        dim_ok = vetores_old.ndim == 2 and vetores_old.shape[1] == EMBED_DIM
+        if sig_old == sig_atual and len(metas_old) == len(vetores_old) and dim_ok:
             return len(metas_old)
+        # dimensão errada → descarta o índice antigo e reindexa tudo.
+        if not dim_ok:
+            vetores_old, metas_old, sig_old = np.empty((0, 0), dtype=np.float32), [], {}
     else:
         vetores_old, metas_old, sig_old = np.empty((0, 0), dtype=np.float32), [], {}
 
@@ -180,7 +190,7 @@ def indexar(reindexar: bool = False) -> int:
               f"({len(vetores_reuso)} reaproveitados).")
         vetores_novos = _embed(client, textos_novos, task_type="RETRIEVAL_DOCUMENT")
     else:
-        vetores_novos = np.empty((0, 0), dtype=np.float32)
+        vetores_novos = np.empty((0, EMBED_DIM), dtype=np.float32)
 
     # 3) Junta reaproveitados + novos.
     if vetores_reuso and len(vetores_novos):
