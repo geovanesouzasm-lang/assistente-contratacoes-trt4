@@ -1,6 +1,9 @@
 """
 rag.py — Indexação e consulta do ACERVO TEÓRICO (versão leve, sem Chroma).
 
+Migrado para o SDK novo `google-genai` (google.genai). A biblioteca antiga `google.generativeai`
+foi descontinuada em 30/11/2025.
+
 Por que sem Chroma: o Chroma depende de onnxruntime, que ainda não suporta Python 3.13. Para o
 nosso caso (acervo pequeno: algumas portarias/guias), uma busca vetorial simples é mais que
 suficiente e não traz dependências problemáticas.
@@ -8,11 +11,14 @@ suficiente e não traz dependências problemáticas.
 Como funciona:
 - Lê os documentos de conhecimento/acervo (md, txt, pdf).
 - Faz chunking com sobreposição.
-- Gera embeddings com a API do Gemini (models/text-embedding-004).
+- Gera embeddings com a API do Gemini.
 - Guarda vetores + textos num arquivo local (rag_index/).
 - Busca por similaridade de cosseno (numpy).
 
 Requer GOOGLE_API_KEY (mesma chave do Gemini) para gerar embeddings.
+
+ATENÇÃO: o índice é gerado com um modelo de embedding específico. Se o modelo mudar, o índice
+precisa ser REGERADO (os vetores antigos não conversam com os novos).
 """
 
 from __future__ import annotations
@@ -23,6 +29,9 @@ from pathlib import Path
 
 import numpy as np
 
+from google import genai
+from google.genai import types
+
 BASE = Path(os.environ.get("ASSISTENTE_BASE", Path(__file__).resolve().parent.parent))
 ACERVO_DIR = BASE / "conhecimento" / "acervo"
 INDEX_DIR = BASE / "rag_index"
@@ -32,23 +41,16 @@ SIG_FILE = INDEX_DIR / "acervo_sig.json"
 
 CHUNK_SIZE = 1500
 CHUNK_OVERLAP = 200
-# Modelos de embedding candidatos, em ordem de preferência. O primeiro que a conta suportar é usado.
-EMBED_CANDIDATOS = [
-    "models/gemini-embedding-001",
-    "models/gemini-embedding-2",
-    "models/gemini-embedding-2-preview",
-    "models/text-embedding-004",
-]
-_EMBED_ESCOLHIDO = None
+
+# Modelo de embedding. No SDK novo o id vai sem o prefixo "models/".
+EMBED_MODELO = os.environ.get("GEMINI_EMBED_MODEL", "gemini-embedding-001")
 
 
-def _configurar():
+def _client() -> genai.Client:
     api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise RuntimeError("Defina GOOGLE_API_KEY (ou GEMINI_API_KEY) para gerar embeddings.")
-    import google.generativeai as genai
-    genai.configure(api_key=api_key)
-    return genai
+    return genai.Client(api_key=api_key)
 
 
 def _ler_documentos() -> list[dict]:
@@ -80,44 +82,22 @@ def _chunk(texto: str) -> list[str]:
     return [c.strip() for c in chunks if c.strip()]
 
 
-def _descobrir_modelo(genai) -> str:
-    """Escolhe o primeiro modelo de embedding que a conta realmente suporta."""
-    global _EMBED_ESCOLHIDO
-    if _EMBED_ESCOLHIDO:
-        return _EMBED_ESCOLHIDO
-    # Tenta listar os modelos disponiveis e achar um que suporte embedContent
-    disponiveis = set()
-    try:
-        for m in genai.list_models():
-            metodos = getattr(m, "supported_generation_methods", []) or []
-            if "embedContent" in metodos:
-                disponiveis.add(m.name)
-    except Exception:
-        pass
-    for cand in EMBED_CANDIDATOS:
-        # aceita tanto "models/x" quanto "x"
-        if cand in disponiveis or f"models/{cand}" in disponiveis or not disponiveis:
-            _EMBED_ESCOLHIDO = cand if cand.startswith("models/") else f"models/{cand}"
-            # se descobrimos a lista, garanta que o escolhido esta nela
-            if disponiveis and _EMBED_ESCOLHIDO not in disponiveis:
-                continue
-            return _EMBED_ESCOLHIDO
-    # fallback final
-    _EMBED_ESCOLHIDO = "models/gemini-embedding-001"
-    return _EMBED_ESCOLHIDO
-
-
-def _embed(genai, textos: list[str], task_type: str) -> np.ndarray:
-    modelo = _descobrir_modelo(genai)
+def _embed(client: genai.Client, textos: list[str], task_type: str) -> np.ndarray:
+    """
+    Gera embeddings com o SDK novo. task_type: "RETRIEVAL_DOCUMENT" (indexação) ou
+    "RETRIEVAL_QUERY" (consulta).
+    """
     vetores = []
     LOTE = 100
     for k in range(0, len(textos), LOTE):
         lote = textos[k : k + LOTE]
-        res = genai.embed_content(model=modelo, content=lote, task_type=task_type)
-        emb = res["embedding"]
-        if isinstance(emb[0], (int, float)):
-            emb = [emb]
-        vetores.extend(emb)
+        res = client.models.embed_content(
+            model=EMBED_MODELO,
+            contents=lote,
+            config=types.EmbedContentConfig(task_type=task_type),
+        )
+        for e in res.embeddings:
+            vetores.append(e.values)
     return np.array(vetores, dtype=np.float32)
 
 
@@ -149,11 +129,10 @@ def _carregar_indice() -> tuple | None:
 def indexar(reindexar: bool = False) -> int:
     """
     Indexa o acervo de forma PERSISTENTE e INCREMENTAL.
-
     - Se o índice salvo estiver atualizado (mesma assinatura do acervo), apenas o carrega: rápido,
       sem custo de embeddings. É o caso normal do boot.
     - Se documentos foram adicionados/removidos/alterados, reaproveita os embeddings dos que não
-      mudaram e calcula SÓ os novos. Isso torna viável um acervo grande (dezenas de documentos).
+      mudaram e calcula SÓ os novos.
     - reindexar=True força recálculo de tudo.
     """
     sig_atual = _assinatura_acervo()
@@ -167,13 +146,13 @@ def indexar(reindexar: bool = False) -> int:
     else:
         vetores_old, metas_old, sig_old = np.empty((0, 0), dtype=np.float32), [], {}
 
-    genai = _configurar()
+    client = _client()
     docs = _ler_documentos()
     if not docs:
         print("[rag] Nenhum documento no acervo para indexar.")
         return 0
 
-    # Fontes que permanecem inalteradas (mesmo nome e tamanho) podem ser reaproveitadas.
+    # Fontes inalteradas (mesmo nome e tamanho) podem ser reaproveitadas.
     inalteradas = {
         nome for nome, tam in sig_atual.items()
         if sig_old.get(nome) == tam
@@ -199,7 +178,7 @@ def indexar(reindexar: bool = False) -> int:
     if textos_novos:
         print(f"[rag] Indexando {len(textos_novos)} trechos novos "
               f"({len(vetores_reuso)} reaproveitados).")
-        vetores_novos = _embed(genai, textos_novos, task_type="retrieval_document")
+        vetores_novos = _embed(client, textos_novos, task_type="RETRIEVAL_DOCUMENT")
     else:
         vetores_novos = np.empty((0, 0), dtype=np.float32)
 
@@ -212,7 +191,6 @@ def indexar(reindexar: bool = False) -> int:
         vetores = vetores_novos
 
     metas_final.extend(metas_novos)
-
     if not len(metas_final):
         return 0
 
@@ -226,11 +204,10 @@ def indexar(reindexar: bool = False) -> int:
 def buscar(consulta: str, n: int = 4) -> list[dict]:
     if not (VEC_FILE.exists() and META_FILE.exists()):
         return []
-    genai = _configurar()
+    client = _client()
     metas = json.loads(META_FILE.read_text(encoding="utf-8"))
     vetores = np.load(VEC_FILE)
-
-    q = _embed(genai, [consulta], task_type="retrieval_query")[0]
+    q = _embed(client, [consulta], task_type="RETRIEVAL_QUERY")[0]
     vn = vetores / (np.linalg.norm(vetores, axis=1, keepdims=True) + 1e-9)
     qn = q / (np.linalg.norm(q) + 1e-9)
     scores = vn @ qn
