@@ -23,8 +23,8 @@ com o argumento correto. Isso foi diagnosticado e validado em teste (chamada vaz
 "instabilidades" e das alucinações de formulário).
 """
 
-from __future__ import annotations
 import os
+from typing import Optional
 
 from google import genai
 from google.genai import types
@@ -63,7 +63,7 @@ def _client() -> genai.Client:
 
 # ---- Ferramentas expostas ao modelo -------------------------------------------------
 
-def consultar_acervo(consulta: str = None) -> str:
+def consultar_acervo(consulta: Optional[str] = None) -> str:
     """
     Consulta o acervo normativo interno do TRT4 (Portarias 1.737/2023 e 1.633/2025, guias e
     manuais) por busca semântica. Use quando precisar do texto de uma norma interna do TRT4.
@@ -86,7 +86,7 @@ def consultar_acervo(consulta: str = None) -> str:
     return "\n\n---\n\n".join(f"[Fonte interna: {r['fonte']}]\n{r['texto']}" for r in resultados)
 
 
-def abrir_formulario(codigo: str = None) -> str:
+def abrir_formulario(codigo: Optional[str] = None) -> str:
     """
     Carrega o conteúdo integral de um formulário CLC (ex.: 'CLC-5A') para ajudar no preenchimento
     ou na revisão. Use quando o enquadramento já apontou qual formulário será trabalhado.
@@ -103,7 +103,7 @@ def abrir_formulario(codigo: str = None) -> str:
     return conteudo
 
 
-def buscar_na_web(consulta: str = None) -> str:
+def buscar_na_web(consulta: Optional[str] = None) -> str:
     """
     Busca informação ATUALIZADA na web (via Google Search) para dados que mudam no tempo e não
     estão na biblioteca interna — por exemplo: o limite de valor vigente para dispensa do art. 75
