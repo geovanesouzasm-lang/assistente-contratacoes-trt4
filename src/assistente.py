@@ -1,21 +1,28 @@
 """
 assistente.py — O núcleo que conversa com o Gemini.
 
-Migrado para o SDK novo `google-genai` (google.genai) e para o modelo gemini-3.5-flash.
-A biblioteca antiga `google.generativeai` foi descontinuada em 30/11/2025.
+SDK: google-genai (google.genai). A biblioteca antiga google.generativeai foi descontinuada em
+30/11/2025. Modelo padrão: gemini-3.5-flash.
 
-Junta as peças:
+Peças:
 - contexto base (prompt de sistema + anexo + índice de formulários) — como system_instruction;
-- ferramentas que o modelo aciona por function calling automático:
+- ferramentas acionadas por function calling automático:
     * consultar_acervo(consulta): busca semântica nas portarias/guias (RAG);
     * abrir_formulario(codigo): carrega um formulário CLC sob demanda;
     * buscar_na_web(consulta): busca externa (grounding) para o que muda no tempo.
 - histórico da conversa (client.chats mantém o histórico da sessão).
 
-No google-genai, passar funções Python em `tools` ativa o automatic function calling: o SDK
-invoca a ferramenta, devolve o resultado ao modelo e continua a geração — equivalente ao antigo
-enable_automatic_function_calling.
+NOTA DE PROJETO — parâmetros opcionais nas ferramentas:
+Os parâmetros das ferramentas são declarados com valor padrão None, de propósito. O modelo, ao
+decidir usar uma ferramenta, ocasionalmente emite a primeira chamada SEM os argumentos. Se a
+função exigisse o argumento (sem default), ela lançaria TypeError; o automatic function calling
+capturaria a exceção e a devolveria ao modelo como erro — e o modelo, em vez de corrigir, tende a
+desistir e alegar "problema técnico". Com o parâmetro opcional, a chamada vazia retorna uma
+orientação curta ("forneça o parâmetro X e chame de novo"), o modelo se corrige e refaz a chamada
+com o argumento correto. Isso foi diagnosticado e validado em teste (chamada vazia era a causa das
+"instabilidades" e das alucinações de formulário).
 """
+
 from __future__ import annotations
 import os
 
@@ -28,6 +35,9 @@ from rag import buscar as rag_buscar, indexar as rag_indexar
 # Id do modelo sem o prefixo "models/" (o SDK novo aceita o id direto).
 MODELO = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash").replace("models/", "")
 
+# thinking_level só existe na geração 3.x; o 2.5 e anteriores rejeitam o parâmetro.
+_MODELO_SUPORTA_THINKING = MODELO.startswith("gemini-3")
+
 
 def _api_key() -> str:
     api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")
@@ -38,9 +48,9 @@ def _api_key() -> str:
     return api_key
 
 
-# Client ÚNICO do módulo — precisa continuar vivo enquanto o chat existir.
-# Se o client for criado dentro de uma função e sair de escopo, o objeto `chat` guardado no
-# session_state do Streamlit falha com "Cannot send a request, as the client has been closed".
+# Client único do módulo: precisa permanecer vivo enquanto o objeto `chat` existir (o chat, guardado
+# no session_state do Streamlit, mantém uma referência a ele). Criá-lo dentro de cada função faria o
+# objeto sair de escopo e quebrar com "Cannot send a request, as the client has been closed".
 _CLIENT = None
 
 
@@ -53,58 +63,62 @@ def _client() -> genai.Client:
 
 # ---- Ferramentas expostas ao modelo -------------------------------------------------
 
-def consultar_acervo(consulta: str) -> str:
+def consultar_acervo(consulta: str = None) -> str:
     """
-    Consulta o acervo teórico (Portarias 1.737/2023 e 1.633/2025, guias, manuais) por busca
-    semântica. Use quando precisar do texto exato de uma norma interna do TRT4.
+    Consulta o acervo normativo interno do TRT4 (Portarias 1.737/2023 e 1.633/2025, guias e
+    manuais) por busca semântica. Use quando precisar do texto de uma norma interna do TRT4.
 
     Args:
-        consulta: o texto ou tema a buscar na biblioteca interna do TRT4.
+        consulta: o tema ou pergunta a buscar na biblioteca interna. Obrigatório.
     """
+    if not consulta:
+        return ("Para consultar o acervo, forneça o parâmetro 'consulta' (o tema a buscar) e chame "
+                "a função novamente.")
     try:
         resultados = rag_buscar(consulta, n=4)
     except Exception as e:
-        # Não mascarar: devolver o erro real para o modelo poder ser honesto com o usuário.
-        return (f"ERRO ao consultar o acervo interno: {type(e).__name__}: {e}. "
-                "NÃO invente conteúdo nem chame isso de 'instabilidade temporária'. Informe ao "
-                "usuário, com honestidade, que não foi possível acessar a biblioteca interna agora.")
+        return (f"ERRO ao consultar o acervo interno: {type(e).__name__}: {e}. NÃO invente conteúdo "
+                "nem chame isto de 'instabilidade'. Informe ao usuário, com honestidade, que não foi "
+                "possível acessar a biblioteca interna agora.")
     if not resultados:
-        return ("O acervo teórico não retornou resultados para essa consulta. Se precisar, tente "
-                "reformular. NÃO invente conteúdo de norma interna.")
-    blocos = []
-    for r in resultados:
-        blocos.append(f"[Fonte interna: {r['fonte']}]\n{r['texto']}")
-    return "\n\n---\n\n".join(blocos)
+        return ("O acervo não retornou resultados para essa consulta. Se fizer sentido, reformule. "
+                "NÃO invente conteúdo de norma interna.")
+    return "\n\n---\n\n".join(f"[Fonte interna: {r['fonte']}]\n{r['texto']}" for r in resultados)
 
 
-def abrir_formulario(codigo: str) -> str:
+def abrir_formulario(codigo: str = None) -> str:
     """
     Carrega o conteúdo integral de um formulário CLC (ex.: 'CLC-5A') para ajudar no preenchimento
-    ou revisão. Use quando o enquadramento já apontou qual formulário será trabalhado.
+    ou na revisão. Use quando o enquadramento já apontou qual formulário será trabalhado.
 
     Args:
-        codigo: o código do formulário (ex.: "CLC-5B").
+        codigo: o código do formulário, ex.: 'CLC-1A'. Obrigatório.
     """
+    if not codigo:
+        return ("Para abrir um formulário, forneça o parâmetro 'codigo' (ex.: 'CLC-1A') e chame a "
+                "função novamente.")
     conteudo = carregar_formulario(codigo.strip().upper())
     if conteudo is None:
         return f"Formulário {codigo} não encontrado. Verifique o código."
     return conteudo
 
 
-def buscar_na_web(consulta: str) -> str:
+def buscar_na_web(consulta: str = None) -> str:
     """
     Busca informação ATUALIZADA na web (via Google Search) para dados que mudam no tempo e não
-    estão na biblioteca interna nem são conhecimento estável — por exemplo: o limite de valor
-    vigente para dispensa do art. 75 (atualizado anualmente por decreto), o TEOR de dispositivos
-    de normas externas (Lei 14.133, Resoluções CNJ/CSJT, INs), índices ou fatos recentes.
-    Retorna um resumo ancorado em fontes reais. Sempre trate o resultado como "externo, a conferir".
+    estão na biblioteca interna — por exemplo: o limite de valor vigente para dispensa do art. 75
+    (atualizado anualmente por decreto), o teor de dispositivos de normas externas (Lei 14.133,
+    Resoluções CNJ/CSJT, INs), índices ou fatos recentes. Trate o resultado como "externo, a
+    conferir".
 
     Args:
-        consulta: a pergunta a pesquisar na web.
+        consulta: a pergunta a pesquisar na web. Obrigatório.
     """
+    if not consulta:
+        return ("Para buscar na web, forneça o parâmetro 'consulta' e chame a função novamente.")
     prompt = (
-        "Busque na web e responda de forma objetiva, citando as fontes (com URL quando "
-        f"possível), à seguinte questão: {consulta}\n"
+        "Busque na web e responda de forma objetiva, citando as fontes (com URL quando possível), "
+        f"à seguinte questão: {consulta}\n"
         "Se for um valor legal/normativo que muda por ano, deixe claro o ano de referência."
     )
     try:
@@ -119,9 +133,8 @@ def buscar_na_web(consulta: str) -> str:
             return resp.text
         return "A busca web não retornou texto. Sugira ao usuário conferir a fonte oficial."
     except Exception as e:
-        return (f"Não consegui concluir a busca web ({e}). "
-                "Informe ao usuário que não foi possível obter o dado externo agora e sugira "
-                "conferir a fonte oficial.")
+        return (f"Não consegui concluir a busca web ({e}). Informe ao usuário que não foi possível "
+                "obter o dado externo agora e sugira conferir a fonte oficial.")
 
 
 FERRAMENTAS = [consultar_acervo, abrir_formulario, buscar_na_web]
@@ -131,35 +144,28 @@ FERRAMENTAS = [consultar_acervo, abrir_formulario, buscar_na_web]
 
 def novo_chat():
     """
-    Cria uma sessão de chat com histórico e function calling automático.
-    O SDK invoca as ferramentas, devolve o resultado ao modelo e continua a geração.
+    Cria uma sessão de chat com histórico e function calling automático. O SDK invoca as
+    ferramentas, devolve o resultado ao modelo e continua a geração.
 
-    thinking_level="low": o gemini-3.5-flash, com thinking mais alto (default "medium"), tem um
-    problema conhecido com automatic function calling — o resultado da ferramenta às vezes não
-    retorna ao modelo (respostas vazias / finish_reason STOP, que o modelo acaba relatando como
-    "instabilidade"). Reduzir o thinking diminui os "thought signatures" que o SDK precisa
-    gerenciar, mitigando o problema. Se ainda falhar, a alternativa é voltar ao gemini-2.5-flash
-    (basta definir a variável de ambiente GEMINI_MODEL=gemini-2.5-flash).
+    thinking_level="low" (só nos modelos 3.x): mantém o raciocínio enxuto, o que reduz a chance do
+    problema de function calling do 3.x com respostas longas, e é mais rápido. Em modelos 2.5 e
+    anteriores o parâmetro não é enviado (eles não o suportam).
     """
-    client = _client()
-    system_instruction = montar_contexto_base()
-    config = types.GenerateContentConfig(
-        system_instruction=system_instruction,
+    config_kwargs = dict(
+        system_instruction=montar_contexto_base(),
         tools=FERRAMENTAS,
-        thinking_config=types.ThinkingConfig(thinking_level="low"),
     )
-    return client.chats.create(model=MODELO, config=config)
+    if _MODELO_SUPORTA_THINKING:
+        config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_level="low")
+
+    client = _client()
+    return client.chats.create(model=MODELO, config=types.GenerateContentConfig(**config_kwargs))
 
 
 def responder(chat, mensagem_usuario: str) -> str:
     """Envia a mensagem do usuário e retorna a resposta em texto."""
     resposta = chat.send_message(mensagem_usuario)
     return resposta.text
-
-
-# NOTA: a função de streaming foi removida nesta migração. O streaming foi testado em 15/07/2026
-# e revertido: com function calling, corrompia a saída (repetição, mistura de idiomas, tabelas
-# cortadas). Se um dia voltar, testar com cuidado neste novo SDK antes de subir.
 
 
 # ---- Teste rápido de linha de comando ----------------------------------------------
