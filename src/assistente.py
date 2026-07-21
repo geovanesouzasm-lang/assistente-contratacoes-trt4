@@ -16,7 +16,6 @@ No google-genai, passar funções Python em `tools` ativa o automatic function c
 invoca a ferramenta, devolve o resultado ao modelo e continua a geração — equivalente ao antigo
 enable_automatic_function_calling.
 """
-
 from __future__ import annotations
 import os
 
@@ -62,10 +61,16 @@ def consultar_acervo(consulta: str) -> str:
     Args:
         consulta: o texto ou tema a buscar na biblioteca interna do TRT4.
     """
-    resultados = rag_buscar(consulta, n=4)
+    try:
+        resultados = rag_buscar(consulta, n=4)
+    except Exception as e:
+        # Não mascarar: devolver o erro real para o modelo poder ser honesto com o usuário.
+        return (f"ERRO ao consultar o acervo interno: {type(e).__name__}: {e}. "
+                "NÃO invente conteúdo nem chame isso de 'instabilidade temporária'. Informe ao "
+                "usuário, com honestidade, que não foi possível acessar a biblioteca interna agora.")
     if not resultados:
-        return ("O acervo teórico ainda não foi indexado ou não retornou resultados. "
-                "Responda com seu conhecimento geral, sinalizando que não confirmou na norma interna.")
+        return ("O acervo teórico não retornou resultados para essa consulta. Se precisar, tente "
+                "reformular. NÃO invente conteúdo de norma interna.")
     blocos = []
     for r in resultados:
         blocos.append(f"[Fonte interna: {r['fonte']}]\n{r['texto']}")
@@ -128,12 +133,20 @@ def novo_chat():
     """
     Cria uma sessão de chat com histórico e function calling automático.
     O SDK invoca as ferramentas, devolve o resultado ao modelo e continua a geração.
+
+    thinking_level="low": o gemini-3.5-flash, com thinking mais alto (default "medium"), tem um
+    problema conhecido com automatic function calling — o resultado da ferramenta às vezes não
+    retorna ao modelo (respostas vazias / finish_reason STOP, que o modelo acaba relatando como
+    "instabilidade"). Reduzir o thinking diminui os "thought signatures" que o SDK precisa
+    gerenciar, mitigando o problema. Se ainda falhar, a alternativa é voltar ao gemini-2.5-flash
+    (basta definir a variável de ambiente GEMINI_MODEL=gemini-2.5-flash).
     """
     client = _client()
     system_instruction = montar_contexto_base()
     config = types.GenerateContentConfig(
         system_instruction=system_instruction,
         tools=FERRAMENTAS,
+        thinking_config=types.ThinkingConfig(thinking_level="low"),
     )
     return client.chats.create(model=MODELO, config=config)
 
